@@ -3,18 +3,19 @@
 Let's say you're building a finance application. One thing you want to be able to do is to sum like currency. Your first attempt in python might look something like this:
 
 ```python
-CURRENCIES = [
-  "USD",
-  "YEN",
-  "XI",
-]
+from enum import Enum, auto
+
+class Currency(Enum):
+    USD = auto()
+    YEN = auto()
+    XI = auto()
 
 class Money(object):
-    def __init__(self, amount: int, currency: str):
+    def __init__(self, amount: int, currency: Currency):
         if not isinstance(amount, int):  # we _could_ rely on type hints but better safe than sorry
-            raise TypeError("Amount must be integer")
-        if currency not in CURRENCIES:
-            raise ValueError("Currency must be one of the following: {}".format(CURRENCIES))
+            raise TypeError("amount must be integer")
+        if not isinstance(currency, Currency):
+            raise TypeError("currency must member of Currency class")
         self.amount = amount
         self.currency = currency
 
@@ -27,9 +28,9 @@ class Money(object):
 
 The above is basically fine and works like you'd expect:
 ```python
-> m1 = Money(12, "YEN")
-> m2 = Money(8, "USD")
-> m3 = Money(22, "YEN")
+> m1 = Money(12, Currency.YEN)
+> m2 = Money(8, Currency.USD)
+> m3 = Money(22, Currency.YEN)
 
 > m1.add(m3)  # works fine
 > print(m1.amount)
@@ -50,7 +51,7 @@ newtype USD = USD Int deriving (Show, Eq, Ord, Num)
 newtype Xi = Xi Int deriving (Show, Eq, Ord, Num)
 ```
 
-Done! We've actually accomplished a LOT more than the python version. Yen, USD, and Xi are effectivley type-safe integers.
+Done! We've actually accomplished a LOT more than the python version. Yen, USD, and Xi are effectively type-safe integers.
 
 ```haskell
 > Yen 3 + Yen 2
