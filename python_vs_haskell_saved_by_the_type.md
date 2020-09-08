@@ -118,3 +118,61 @@ instance Num USD where
   (*) (USD a) (USD b) = USD (a * b)
   ..
 ```
+
+It might feel weird to have such specific custom types. It _seems_ like it should make your code less reusable. Like say you've got a super sick new type:
+
+```haskell
+import Data.Char
+
+newtype CoolLetter = CoolLetter Char deriving (Show)
+```
+
+and you also want to use a library that acts on a subset of that type, aka `Char`.
+
+```haskell
+-- some library function
+isCool :: Char -> Bool
+isCool = flip elem "JAKE"
+```
+
+To use `isCool` we now need to write a custom adapter:
+
+```haskell
+-- naive one-off adapter function
+isCool' :: CoolLetter -> Bool
+isCool' (CoolLetter c) = isCool c
+```
+
+Not too hard but gonna get annoying fast if we have to do that for every 3rd party function. A better idea would be to implement a generic adapter:
+
+```haskell
+-- smart generic adapter function
+apply :: (Char -> a) -> CoolLetter -> a
+apply f (CoolLetter c) = f c
+```
+
+Now we can stufff `CoolLetter` into any `Char -> *` kinded function.
+
+```haskell
+> apply isCool (CoolLetter 'N')
+False
+```
+
+What if we had a more complicated datatype and we wanted to be able to apply functions to internal structure?
+
+```haskell
+data LabeledType a = LabeledType a String deriving (Show)
+
+instance Functor LabeledType where
+  fmap f (LabeledType a s) = LabeledType (f a) s
+```
+
+Now we can take any function that consumes a `Char` and we can apply that to the internals of `LabeledType`.
+
+```haskell
+> myLetter = LabeledType 'j' "a very cool letter"
+> fmap toUpper myLetter
+LabeledType 'J' "a very cool letter"
+```
+
+The takeaway here is that it's really easy in Haskell to interoperate generic functions with highly specific datatypes.
