@@ -58,6 +58,22 @@ Just (-8.903614457831326)
 Nothing
 ```
 
+But wait -- those lambdas in the middle (`\q -> Just (q + 10)`) are sure annoying. We're just doing simple arithmetic. With fmap we can chain computations that don't care about the our monadic structure of the computation (in this case `Maybe`).
+
+```haskell
+import Data.Functor
+
+sillyFunction' :: RealFrac a => a -> Maybe a
+sillyFunction' d = safeDivide 36 d
+                  <&> (+10)
+                  >>= safeDivide 14
+                  <&> (10 `subtract`)
+
+```
+
+And we get the same result as above.
+
+
 ## reiterating the point
 
 ```Haskell
